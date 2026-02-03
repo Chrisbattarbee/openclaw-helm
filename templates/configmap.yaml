@@ -25,6 +25,8 @@ data:
     {{- if .Values.chromium.enabled }}
     {{- $_ := set $config "browser" (dict "cdpUrl" "http://localhost:9222") }}
     {{- end }}
+    {{- /* Set gateway mode */ -}}
+    {{- $_ := set $config "gateway" (dict "mode" "local") }}
     {{- /* Merge any user-provided overrides */ -}}
     {{- if .Values.openclaw.configOverrides }}
     {{- $config = mergeOverwrite $config .Values.openclaw.configOverrides }}
