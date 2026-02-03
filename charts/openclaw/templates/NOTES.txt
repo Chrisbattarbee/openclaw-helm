@@ -1,5 +1,9 @@
 OpenClaw has been deployed!
 
+Wait for the pod to be ready:
+
+  kubectl wait --namespace {{ .Release.Namespace }} --for=condition=ready pod -l app.kubernetes.io/name={{ include "openclaw.name" . }},app.kubernetes.io/instance={{ .Release.Name }} --timeout=120s
+
 Run onboarding to get started:
 
   kubectl exec -it --namespace {{ .Release.Namespace }} deploy/{{ include "openclaw.fullname" . }} -c openclaw -- node dist/index.js onboard
