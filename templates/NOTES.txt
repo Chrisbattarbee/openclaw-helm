@@ -35,6 +35,11 @@ OpenClaw has been deployed!
 4. Chromium browser automation is enabled. The CDP endpoint is available internally at localhost:9222.
 {{- end }}
 
+{{- if and (not .Values.credentials.gatewayToken) (not .Values.credentials.existingSecret) }}
+5. Get the auto-generated gateway token:
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ include "openclaw.fullname" . }} -o jsonpath="{.data.OPENCLAW_GATEWAY_TOKEN}" | base64 -d; echo
+{{- end }}
+
 {{- if not .Values.credentials.anthropicApiKey }}
 {{- if not .Values.credentials.existingSecret }}
 
