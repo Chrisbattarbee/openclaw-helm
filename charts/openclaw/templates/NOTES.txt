@@ -1,0 +1,49 @@
+OpenClaw has been deployed!
+
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "openclaw.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "openclaw.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "openclaw.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "openclaw.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  echo "Gateway available at: http://127.0.0.1:{{ .Values.service.port }}"
+
+  # For Canvas (HTTP interface):
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "openclaw.fullname" . }} {{ .Values.service.canvasPort }}:{{ .Values.service.canvasPort }}
+  echo "Canvas available at: http://127.0.0.1:{{ .Values.service.canvasPort }}"
+{{- end }}
+
+2. Check the pod status:
+  kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "openclaw.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+3. View logs:
+  kubectl logs --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "openclaw.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -c openclaw
+
+{{- if .Values.chromium.enabled }}
+4. Chromium browser automation is enabled. The CDP endpoint is available internally at localhost:9222.
+{{- end }}
+
+{{- if and (not .Values.credentials.gatewayToken) (not .Values.credentials.existingSecret) }}
+5. Get the auto-generated gateway token:
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ include "openclaw.fullname" . }} -o jsonpath="{.data.OPENCLAW_GATEWAY_TOKEN}" | base64 -d; echo
+{{- end }}
+
+{{- if not .Values.credentials.anthropicApiKey }}
+{{- if not .Values.credentials.existingSecret }}
+
+WARNING: No API key has been configured. OpenClaw requires an LLM provider API key to function.
+Set credentials.anthropicApiKey or use credentials.existingSecret to provide one.
+{{- end }}
+{{- end }}

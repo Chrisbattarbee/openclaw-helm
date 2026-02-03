@@ -1,0 +1,16 @@
+apiVersion: v2
+name: openclaw
+description: A Helm chart for deploying OpenClaw - an open-source AI personal assistant
+type: application
+version: 0.1.0
+appVersion: "2026.1.30"
+keywords:
+  - openclaw
+  - ai
+  - assistant
+  - llm
+home: https://openclaw.ai
+sources:
+  - https://github.com/openclaw/openclaw
+maintainers:
+  - name: Chris

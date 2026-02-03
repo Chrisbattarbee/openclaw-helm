@@ -1,0 +1,215 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openclaw.fullname" . }}
+  labels:
+    {{- include "openclaw.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "openclaw.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "openclaw.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "openclaw.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-config
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /home/openclaw/.openclaw
+              if [ "{{ .Values.openclaw.configMode }}" = "merge" ] && [ -f /home/openclaw/.openclaw/openclaw.json ]; then
+                # Merge: existing config as base, helm config overwrites
+                node -e "
+                  const fs = require('fs');
+                  const existing = JSON.parse(fs.readFileSync('/home/openclaw/.openclaw/openclaw.json', 'utf8'));
+                  const helm = JSON.parse(fs.readFileSync('/config/openclaw.json', 'utf8'));
+                  const deepMerge = (target, source) => {
+                    for (const key of Object.keys(source)) {
+                      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                        target[key] = target[key] || {};
+                        deepMerge(target[key], source[key]);
+                      } else {
+                        target[key] = source[key];
+                      }
+                    }
+                    return target;
+                  };
+                  const merged = deepMerge(existing, helm);
+                  fs.writeFileSync('/home/openclaw/.openclaw/openclaw.json', JSON.stringify(merged, null, 2));
+                "
+              else
+                cp /config/openclaw.json /home/openclaw/.openclaw/openclaw.json
+              fi
+              chown -R 1000:1000 /home/openclaw/.openclaw
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+          volumeMounts:
+            - name: data
+              mountPath: /home/openclaw/.openclaw
+            - name: config
+              mountPath: /config
+              readOnly: true
+        {{- if .Values.openclaw.skills }}
+        - name: init-skills
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              {{- range .Values.openclaw.skills }}
+              echo "Installing skill: {{ . }}"
+              openclaw skill install {{ . }} || true
+              {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "openclaw.secretName" . }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/openclaw/.openclaw
+        {{- end }}
+      containers:
+        - name: openclaw
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - node
+            - dist/index.js
+            - gateway
+            - --bind
+            - {{ .Values.openclaw.bind }}
+            - --port
+            - "{{ .Values.service.port }}"
+          ports:
+            - name: gateway
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - name: canvas
+              containerPort: {{ .Values.service.canvasPort }}
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ include "openclaw.secretName" . }}
+          env:
+            - name: HOME
+              value: /home/openclaw
+            - name: TZ
+              value: {{ .Values.openclaw.timezone | quote }}
+          {{- if .Values.probes.liveness.enabled }}
+          livenessProbe:
+            tcpSocket:
+              port: gateway
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            successThreshold: {{ .Values.probes.liveness.successThreshold }}
+          {{- end }}
+          {{- if .Values.probes.readiness.enabled }}
+          readinessProbe:
+            tcpSocket:
+              port: gateway
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            successThreshold: {{ .Values.probes.readiness.successThreshold }}
+          {{- end }}
+          {{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            tcpSocket:
+              port: gateway
+            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            successThreshold: {{ .Values.probes.startup.successThreshold }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/openclaw/.openclaw
+        {{- if .Values.chromium.enabled }}
+        - name: chromium
+          image: "{{ .Values.chromium.image.repository }}:{{ .Values.chromium.image.tag }}"
+          imagePullPolicy: {{ .Values.chromium.image.pullPolicy }}
+          command:
+            - chromium-browser
+            - --headless
+            - --disable-gpu
+            - --disable-software-rasterizer
+            - --disable-dev-shm-usage
+            - --no-sandbox
+            - --remote-debugging-address=0.0.0.0
+            - --remote-debugging-port=9222
+          ports:
+            - name: cdp
+              containerPort: 9222
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.chromium.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.chromium.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+        {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "openclaw.configmapName" . }}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "openclaw.pvcName" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- if .Values.chromium.enabled }}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,245 @@
+# OpenClaw Helm Chart Values
+# https://docs.openclaw.ai/
+
+# -- Override the name of the chart
+nameOverride: ""
+# -- Override the full name of the release
+fullnameOverride: ""
+
+# Image configuration
+image:
+  # -- Container image repository
+  repository: ghcr.io/openclaw/openclaw
+  # -- Container image tag
+  tag: "2026.1.30"
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# OpenClaw application settings
+openclaw:
+  # -- Bind mode: "lan" for network access, "localhost" for local only
+  bind: "lan"
+  # -- Timezone environment variable
+  timezone: "UTC"
+  # -- Config file mode: "merge" keeps existing config and merges helm values (helm wins conflicts),
+  # "overwrite" replaces config entirely
+  configMode: "merge"
+  # -- Skills to install from ClawHub
+  skills: []
+
+  # Agent configuration (maps to agents.defaults in openclaw.json)
+  agents:
+    defaults:
+      # -- Primary model in provider/model format
+      model: "anthropic/claude-sonnet-4-20250514"
+      # -- Timeout in seconds for agent operations
+      timeoutSeconds: 600
+      # -- Thinking mode: "low", "high", or "off"
+      thinkingDefault: "low"
+
+  # -- Raw JSON overrides merged into openclaw.json
+  # Use this for advanced configuration not covered by other options
+  # Example:
+  #   configOverrides:
+  #     channels:
+  #       telegram:
+  #         enabled: true
+  configOverrides: {}
+
+# Credentials for LLM providers
+credentials:
+  # -- Anthropic API key (required if using Anthropic models)
+  anthropicApiKey: ""
+  # -- OpenAI API key (optional, for OpenAI models)
+  openaiApiKey: ""
+  # -- Gateway authentication token (auto-generated if empty)
+  gatewayToken: ""
+  # -- Use an existing secret instead of creating one
+  # The secret must contain keys: ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENCLAW_GATEWAY_TOKEN
+  existingSecret: ""
+
+# Chromium sidecar for browser automation
+chromium:
+  # -- Enable Chromium sidecar container
+  enabled: true
+  image:
+    # -- Chromium container image repository
+    repository: zenika/alpine-chrome
+    # -- Chromium container image tag
+    tag: "124"
+    # -- Chromium image pull policy
+    pullPolicy: IfNotPresent
+  # -- Resource requests and limits for Chromium container
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # -- Security context for Chromium container
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+# Persistence configuration
+persistence:
+  # -- Enable persistent storage for OpenClaw data
+  enabled: true
+  # -- Storage size
+  size: 5Gi
+  # -- Storage class (leave empty for default)
+  storageClass: ""
+  # -- Access mode
+  accessMode: ReadWriteOnce
+  # -- Annotations for the PVC
+  annotations: {}
+  # -- Use an existing PVC instead of creating one
+  existingClaim: ""
+
+# Service configuration
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Gateway port (WebSocket control plane)
+  port: 18789
+  # -- Canvas port (HTTP server)
+  canvasPort: 18793
+  # -- Annotations for the service
+  annotations: {}
+
+# Ingress configuration
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  className: ""
+  # -- Annotations for the ingress
+  # Example for WebSocket support with nginx:
+  # nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+  # nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  # nginx.org/websocket-services: "openclaw"
+  annotations: {}
+  # -- Ingress hosts configuration
+  hosts:
+    - host: openclaw.local
+      paths:
+        - path: /
+          pathType: Prefix
+          # -- Which service port to use (gateway or canvas)
+          servicePort: gateway
+  # -- TLS configuration
+  tls: []
+  #  - secretName: openclaw-tls
+  #    hosts:
+  #      - openclaw.local
+
+# Resource requests and limits for main OpenClaw container
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Security context for the pod
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# Security context for the main OpenClaw container
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  seccompProfile:
+    type: RuntimeDefault
+
+# Service account configuration
+serviceAccount:
+  # -- Create a service account
+  create: true
+  # -- Service account name (auto-generated if empty)
+  name: ""
+  # -- Annotations for the service account
+  annotations: {}
+
+# -- Node selector for pod scheduling
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling
+tolerations: []
+
+# -- Affinity rules for pod scheduling
+affinity: {}
+
+# -- Annotations for the pod
+podAnnotations: {}
+
+# -- Labels for the pod
+podLabels: {}
+
+# Probes configuration
+probes:
+  # Liveness probe
+  liveness:
+    # -- Enable liveness probe
+    enabled: true
+    # -- Initial delay before probe starts
+    initialDelaySeconds: 30
+    # -- Probe interval
+    periodSeconds: 10
+    # -- Probe timeout
+    timeoutSeconds: 5
+    # -- Failure threshold
+    failureThreshold: 3
+    # -- Success threshold
+    successThreshold: 1
+  # Readiness probe
+  readiness:
+    # -- Enable readiness probe
+    enabled: true
+    # -- Initial delay before probe starts
+    initialDelaySeconds: 10
+    # -- Probe interval
+    periodSeconds: 10
+    # -- Probe timeout
+    timeoutSeconds: 5
+    # -- Failure threshold
+    failureThreshold: 3
+    # -- Success threshold
+    successThreshold: 1
+  # Startup probe
+  startup:
+    # -- Enable startup probe
+    enabled: true
+    # -- Initial delay before probe starts
+    initialDelaySeconds: 5
+    # -- Probe interval
+    periodSeconds: 5
+    # -- Probe timeout
+    timeoutSeconds: 5
+    # -- Failure threshold (allows up to 30*5=150s for startup)
+    failureThreshold: 30
+    # -- Success threshold
+    successThreshold: 1
