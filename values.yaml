@@ -52,8 +52,10 @@ credentials:
   anthropicApiKey: ""
   # -- OpenAI API key (optional, for OpenAI models)
   openaiApiKey: ""
+  # -- Gateway authentication token (auto-generated if empty)
+  gatewayToken: ""
   # -- Use an existing secret instead of creating one
-  # The secret must contain keys: ANTHROPIC_API_KEY and/or OPENAI_API_KEY
+  # The secret must contain keys: ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENCLAW_GATEWAY_TOKEN
   existingSecret: ""
 
 # Chromium sidecar for browser automation
