@@ -46,11 +46,13 @@ helm install openclaw . -f my-values.yaml
 |-----------|-------------|---------|
 | `image.repository` | Container image repository | `ghcr.io/openclaw/openclaw` |
 | `image.tag` | Container image tag | `2026.1.30` |
-| `openclaw.model.provider` | LLM provider | `anthropic` |
-| `openclaw.model.name` | Model name | `claude-sonnet-4-20250514` |
-| `openclaw.timezone` | Timezone | `UTC` |
+| `openclaw.agents.defaults.model` | Primary model (provider/model format) | `anthropic/claude-sonnet-4-20250514` |
+| `openclaw.agents.defaults.timeoutSeconds` | Agent timeout in seconds | `600` |
+| `openclaw.agents.defaults.thinkingDefault` | Thinking mode (low/high/off) | `low` |
+| `openclaw.timezone` | Timezone environment variable | `UTC` |
 | `openclaw.bind` | Bind mode (lan/localhost) | `lan` |
 | `openclaw.skills` | Skills to install from ClawHub | `[]` |
+| `openclaw.configOverrides` | Raw JSON merged into openclaw.json | `{}` |
 | `credentials.anthropicApiKey` | Anthropic API key | `""` |
 | `credentials.openaiApiKey` | OpenAI API key | `""` |
 | `credentials.existingSecret` | Use existing secret | `""` |

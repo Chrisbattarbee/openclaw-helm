@@ -5,15 +5,19 @@ credentials:
   anthropicApiKey: "sk-ant-test-key-for-ci"
 
 openclaw:
-  model:
-    provider: anthropic
-    name: claude-sonnet-4-20250514
   timezone: "America/New_York"
   skills:
     - weather
     - calendar
+  agents:
+    defaults:
+      model: "anthropic/claude-sonnet-4-20250514"
+      timeoutSeconds: 300
+      thinkingDefault: "high"
+  # Example of using configOverrides for advanced config
   configOverrides:
-    customSetting: true
+    logging:
+      level: "debug"
 
 chromium:
   enabled: true

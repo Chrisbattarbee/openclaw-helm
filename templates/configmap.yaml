@@ -7,13 +7,26 @@ metadata:
 data:
   openclaw.json: |
     {{- $config := dict }}
-    {{- $_ := set $config "model" (dict "provider" .Values.openclaw.model.provider "name" .Values.openclaw.model.name) }}
-    {{- $_ := set $config "timezone" .Values.openclaw.timezone }}
-    {{- $_ := set $config "timeout" .Values.openclaw.timeout }}
+    {{- /* Build agents.defaults section */ -}}
+    {{- $agentDefaults := dict }}
+    {{- if .Values.openclaw.agents.defaults.model }}
+    {{- $_ := set $agentDefaults "model" (dict "primary" .Values.openclaw.agents.defaults.model) }}
+    {{- end }}
+    {{- if .Values.openclaw.agents.defaults.timeoutSeconds }}
+    {{- $_ := set $agentDefaults "timeoutSeconds" .Values.openclaw.agents.defaults.timeoutSeconds }}
+    {{- end }}
+    {{- if .Values.openclaw.agents.defaults.thinkingDefault }}
+    {{- $_ := set $agentDefaults "thinkingDefault" .Values.openclaw.agents.defaults.thinkingDefault }}
+    {{- end }}
+    {{- if $agentDefaults }}
+    {{- $_ := set $config "agents" (dict "defaults" $agentDefaults) }}
+    {{- end }}
+    {{- /* Add browser CDP config if chromium sidecar is enabled */ -}}
     {{- if .Values.chromium.enabled }}
     {{- $_ := set $config "browser" (dict "cdpUrl" "http://localhost:9222") }}
     {{- end }}
+    {{- /* Merge any user-provided overrides */ -}}
     {{- if .Values.openclaw.configOverrides }}
-    {{- $config = merge .Values.openclaw.configOverrides $config }}
+    {{- $config = mergeOverwrite $config .Values.openclaw.configOverrides }}
     {{- end }}
     {{- $config | toPrettyJson | nindent 4 }}

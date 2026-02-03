@@ -20,22 +20,30 @@ imagePullSecrets: []
 
 # OpenClaw application settings
 openclaw:
-  # Model configuration
-  model:
-    # -- LLM provider (anthropic, openai, etc.)
-    provider: anthropic
-    # -- Model name to use
-    name: claude-sonnet-4-20250514
-  # -- Timezone for the assistant
-  timezone: "UTC"
-  # -- Request timeout in seconds
-  timeout: 300
   # -- Bind mode: "lan" for network access, "localhost" for local only
   bind: "lan"
+  # -- Timezone environment variable
+  timezone: "UTC"
   # -- Skills to install from ClawHub
   skills: []
+
+  # Agent configuration (maps to agents.defaults in openclaw.json)
+  agents:
+    defaults:
+      # -- Primary model in provider/model format
+      model: "anthropic/claude-sonnet-4-20250514"
+      # -- Timeout in seconds for agent operations
+      timeoutSeconds: 600
+      # -- Thinking mode: "low", "high", or "off"
+      thinkingDefault: "low"
+
   # -- Raw JSON overrides merged into openclaw.json
   # Use this for advanced configuration not covered by other options
+  # Example:
+  #   configOverrides:
+  #     channels:
+  #       telegram:
+  #         enabled: true
   configOverrides: {}
 
 # Credentials for LLM providers
