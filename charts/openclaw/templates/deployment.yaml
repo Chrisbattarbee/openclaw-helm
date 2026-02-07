@@ -74,6 +74,53 @@ spec:
             - name: config
               mountPath: /config
               readOnly: true
+        {{- if .Values.credentials.anthropicSetupToken }}
+        - name: init-auth
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ -n "$ANTHROPIC_SETUP_TOKEN" ]; then
+                AUTH_FILE="/home/openclaw/.openclaw/agents/main/agent/auth-profiles.json"
+                mkdir -p "$(dirname "$AUTH_FILE")"
+                node - "$AUTH_FILE" "{{ .Values.openclaw.configMode }}" <<'NODEEOF'
+              const fs = require('fs');
+              const authFile = process.argv[2];
+              const configMode = process.argv[3];
+              const token = process.env.ANTHROPIC_SETUP_TOKEN;
+              const newProfile = {
+                'anthropic:claude-cli': {
+                  type: 'token',
+                  provider: 'anthropic',
+                  token: token
+                }
+              };
+              let store;
+              if (configMode === 'merge' && fs.existsSync(authFile)) {
+                store = JSON.parse(fs.readFileSync(authFile, 'utf8'));
+                Object.assign(store.profiles, newProfile);
+              } else if (configMode === 'merge' && !fs.existsSync(authFile)) {
+                store = { version: 1, profiles: newProfile };
+              } else {
+                store = { version: 1, profiles: newProfile };
+              }
+              fs.writeFileSync(authFile, JSON.stringify(store, null, 2));
+              console.log('Setup-token auth profile written to', authFile);
+              NODEEOF
+                chown -R 1000:1000 "$(dirname "$AUTH_FILE")"
+              fi
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+          envFrom:
+            - secretRef:
+                name: {{ include "openclaw.secretName" . }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/openclaw/.openclaw
+        {{- end }}
         {{- if .Values.openclaw.skills }}
         - name: init-skills
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

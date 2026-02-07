@@ -51,14 +51,20 @@ openclaw:
 
 # Credentials for LLM providers
 credentials:
-  # -- Anthropic API key (required if using Anthropic models)
+  # -- Anthropic API key (required if using Anthropic models with API billing)
   anthropicApiKey: ""
+  # -- Anthropic setup-token for Claude subscription users (alternative to API key).
+  # Generate with `claude setup-token`, then set this value.
+  # The token is written to auth-profiles.json in the data volume on each deploy.
+  # See https://docs.openclaw.ai/providers/anthropic#option-b-claude-setup-token
+  anthropicSetupToken: ""
   # -- OpenAI API key (optional, for OpenAI models)
   openaiApiKey: ""
   # -- Gateway authentication token (auto-generated if empty)
   gatewayToken: ""
   # -- Use an existing secret instead of creating one
-  # The secret must contain keys: ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENCLAW_GATEWAY_TOKEN
+  # The secret must contain keys matching the credentials you use:
+  # ANTHROPIC_API_KEY, ANTHROPIC_SETUP_TOKEN, OPENAI_API_KEY, OPENCLAW_GATEWAY_TOKEN
   existingSecret: ""
 
 # Chromium sidecar for browser automation
