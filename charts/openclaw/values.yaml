@@ -199,6 +199,9 @@ podAnnotations: {}
 # -- Labels for the pod
 podLabels: {}
 
+# -- Revision history limit for Deployment (number of old ReplicaSets to keep)
+revisionHistoryLimit: 5
+
 # Probes configuration
 probes:
   # Liveness probe
