@@ -45,6 +45,7 @@ spec:
             - -c
             - |
               mkdir -p /home/openclaw/.openclaw
+              mkdir -p /home/openclaw/.openclaw/workspace
               if [ "{{ .Values.openclaw.configMode }}" = "merge" ] && [ -f /home/openclaw/.openclaw/openclaw.json ]; then
                 # Merge: existing config as base, helm config overwrites
                 node -e "
