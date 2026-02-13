@@ -4,6 +4,10 @@ metadata:
   name: {{ include "openclaw.fullname" . }}
   labels:
     {{- include "openclaw.labels" . | nindent 4 }}
+  {{- with .Values.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: 1
   strategy:
@@ -159,6 +163,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /home/openclaw/.openclaw
+            {{- with .Values.additionalVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
         {{- if .Values.chromium.enabled }}
         - name: chromium
           image: "{{ .Values.chromium.image.repository }}:{{ .Values.chromium.image.tag }}"
@@ -200,6 +207,9 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
+        {{- end }}
+        {{- with .Values.additionalVolumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

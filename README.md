@@ -13,7 +13,7 @@ A Helm chart for deploying [OpenClaw](https://openclaw.ai/) — an open-source A
 ## Quick Start
 
 ```bash
-helm repo add openclaw https://chrisbattarbee.github.io/openclaw-helm
+helm repo add openclaw https://the-saas-shop.github.io/openclaw-helm
 helm repo update
 helm install openclaw openclaw/openclaw --set credentials.anthropicApiKey=sk-ant-xxx
 ```
@@ -34,7 +34,7 @@ This installs OpenClaw version **2026.2.6** by default. To use a different versi
 
 ```bash
 # Add the repository
-helm repo add openclaw https://chrisbattarbee.github.io/openclaw-helm
+helm repo add openclaw https://the-saas-shop.github.io/openclaw-helm
 helm repo update
 
 # Install the chart

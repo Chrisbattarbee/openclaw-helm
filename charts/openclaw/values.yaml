@@ -193,6 +193,15 @@ tolerations: []
 # -- Affinity rules for pod scheduling
 affinity: {}
 
+# -- Additional volumes to add to the pod
+additionalVolumes: []
+# -- Additional volume mounts to add to the main OpenClaw container
+additionalVolumeMounts: []
+
+# -- Annotations for the Deployment resource itself
+deployment:
+  annotations: {}
+
 # -- Annotations for the pod
 podAnnotations: {}
 
