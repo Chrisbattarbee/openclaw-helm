@@ -51,6 +51,7 @@ openclaw:
 
 # -- Workspace files to mount from ConfigMaps into ~/.openclaw/workspace/
 # Each entry references an external ConfigMap and key to copy into the workspace directory.
+# Optional "path" field specifies a custom destination path relative to workspace/.
 # Example:
 #   workspaceFiles:
 #     - name: soul
@@ -59,6 +60,10 @@ openclaw:
 #     - name: identity
 #       configMapName: openclaw-identity
 #       key: IDENTITY.md
+#     - name: cron-jobs
+#       configMapName: openclaw-cron-jobs
+#       key: jobs.json
+#       path: .openclaw/cron/jobs.json
 workspaceFiles: []
 
 # Credentials for LLM providers

@@ -70,7 +70,12 @@ spec:
                 cp /config/openclaw.json /home/openclaw/.openclaw/openclaw.json
               fi
               {{- range .Values.workspaceFiles }}
+              {{- if .path }}
+              mkdir -p "$(dirname /home/openclaw/{{ .path }})"
+              [ -f /tmp/workspace-files/{{ .key }} ] && cp /tmp/workspace-files/{{ .key }} /home/openclaw/{{ .path }}
+              {{- else }}
               [ -f /tmp/workspace-files/{{ .key }} ] && cp /tmp/workspace-files/{{ .key }} /home/openclaw/.openclaw/workspace/{{ .key }}
+              {{- end }}
               {{- end }}
               chown -R 1000:1000 /home/openclaw/.openclaw
           securityContext:
