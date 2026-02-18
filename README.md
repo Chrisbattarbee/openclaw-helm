@@ -18,7 +18,7 @@ helm repo update
 helm install openclaw openclaw/openclaw --set credentials.anthropicApiKey=sk-ant-xxx
 ```
 
-This installs OpenClaw version **2026.2.6** by default. To use a different version, set `image.tag`.
+This installs OpenClaw version **2026.2.17** by default. To use a different version, set `image.tag`.
 
 ---
 
@@ -89,7 +89,7 @@ helm install openclaw openclaw/openclaw -f my-values.yaml
 | Parameter                                  | Description                           | Default                              |
 | ------------------------------------------ | ------------------------------------- | ------------------------------------ |
 | `image.repository`                         | Container image repository            | `ghcr.io/openclaw/openclaw`          |
-| `image.tag`                                | Container image tag                   | `2026.2.6`                           |
+| `image.tag`                                | Container image tag                   | `2026.2.17`                          |
 | `openclaw.agents.defaults.model`           | Primary model (provider/model format) | `anthropic/claude-sonnet-4-20250514` |
 | `openclaw.agents.defaults.timeoutSeconds`  | Agent timeout in seconds              | `600`                                |
 | `openclaw.agents.defaults.thinkingDefault` | Thinking mode (low/high/off)          | `low`                                |
@@ -107,7 +107,7 @@ helm install openclaw openclaw/openclaw -f my-values.yaml
 | Parameter                                  | Description                              | Default                              |
 | ------------------------------------------ | ---------------------------------------- | ------------------------------------ |
 | `image.repository`                         | Container image repository               | `ghcr.io/openclaw/openclaw`          |
-| `image.tag`                                | Container image tag                      | `2026.2.6`                           |
+| `image.tag`                                | Container image tag                      | `2026.2.17`                          |
 | `image.pullPolicy`                         | Image pull policy                        | `IfNotPresent`                       |
 | `openclaw.agents.defaults.model`           | Primary model (provider/model format)    | `anthropic/claude-sonnet-4-20250514` |
 | `openclaw.agents.defaults.timeoutSeconds`  | Agent timeout in seconds                 | `600`                                |

@@ -11,7 +11,7 @@ image:
   # -- Container image repository
   repository: ghcr.io/openclaw/openclaw
   # -- Container image tag
-  tag: "2026.2.6"
+  tag: "2026.2.17"
   # -- Image pull policy
   pullPolicy: IfNotPresent
 
