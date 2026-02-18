@@ -210,6 +210,19 @@ podLabels: {}
 # -- Revision history limit for Deployment (number of old ReplicaSets to keep)
 revisionHistoryLimit: 5
 
+# -- Extra manifests to deploy alongside the chart.
+# Can be used for Middleware, ServersTransport, or any other CRDs.
+# Example:
+#   extraManifests:
+#     - apiVersion: traefik.io/v1alpha1
+#       kind: Middleware
+#       metadata:
+#         name: redirect-https
+#       spec:
+#         redirectScheme:
+#           scheme: https
+extraManifests: []
+
 # Probes configuration
 probes:
   # Liveness probe
