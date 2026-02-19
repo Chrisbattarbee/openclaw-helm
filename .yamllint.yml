@@ -1,0 +1,12 @@
+extends: default
+
+# Helm templates are not valid YAML until rendered, so yamllint will choke on
+# chart template files. We lint rendered manifests separately (kubeconform).
+ignore: |
+  charts/**/templates/**
+
+rules:
+  line-length: disable
+  document-start: disable
+  comments-indentation: disable
+  truthy: disable
