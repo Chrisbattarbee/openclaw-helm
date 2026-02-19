@@ -6,6 +6,7 @@ metadata:
     {{- include "openclaw.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   strategy:
     type: Recreate
   selector:
@@ -29,7 +30,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
       serviceAccountName: {{ include "openclaw.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
