@@ -221,6 +221,10 @@ tolerations: []
 # -- Affinity rules for pod scheduling
 affinity: {}
 
+# -- Additional containers to add to the pod (sidecars)
+additionalContainers: []
+# -- Additional init containers to add to the pod
+additionalInitContainers: []
 # -- Additional volumes to add to the pod
 additionalVolumes: []
 # -- Additional volume mounts to add to the main OpenClaw container

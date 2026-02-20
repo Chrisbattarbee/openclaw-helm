@@ -107,6 +107,9 @@ spec:
               subPath: {{ .Values.cronJobs.key }}
               readOnly: true
             {{- end }}
+        {{- with .Values.additionalInitContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         {{- if .Values.openclaw.skills }}
         - name: init-skills
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -195,6 +198,9 @@ spec:
             {{- with .Values.additionalVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+        {{- with .Values.additionalContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         {{- if .Values.chromium.enabled }}
         - name: chromium
           image: "{{ .Values.chromium.image.repository }}:{{ .Values.chromium.image.tag }}"
