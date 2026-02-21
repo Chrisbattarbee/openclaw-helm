@@ -79,6 +79,12 @@ spec:
               {{- if .Values.cronJobs.configMapName }}
               [ -f /tmp/cron-jobs/{{ .Values.cronJobs.key }} ] && cp /tmp/cron-jobs/{{ .Values.cronJobs.key }} /home/openclaw/.openclaw/cron/{{ .Values.cronJobs.key }}
               {{- end }}
+              {{- range $agent := .Values.agentWorkspaceFiles }}
+              mkdir -p /home/openclaw/.openclaw/workspace-{{ $agent.agentKey }}
+              {{- range $agent.files }}
+              [ -f /tmp/agent-workspace-files/{{ .name }}/{{ .key }} ] && cp /tmp/agent-workspace-files/{{ .name }}/{{ .key }} /home/openclaw/.openclaw/workspace-{{ $agent.agentKey }}/{{ .key }}
+              {{- end }}
+              {{- end }}
               chown -R 1000:1000 /home/openclaw/.openclaw
           securityContext:
             runAsUser: 0
@@ -106,6 +112,14 @@ spec:
               mountPath: /tmp/cron-jobs/{{ .Values.cronJobs.key }}
               subPath: {{ .Values.cronJobs.key }}
               readOnly: true
+            {{- end }}
+            {{- range $agent := .Values.agentWorkspaceFiles }}
+            {{- range $agent.files }}
+            - name: agent-workspace-{{ .name }}
+              mountPath: /tmp/agent-workspace-files/{{ .name }}/{{ .key }}
+              subPath: {{ .key }}
+              readOnly: true
+            {{- end }}
             {{- end }}
         {{- with .Values.additionalInitContainers }}
         {{- toYaml . | nindent 8 }}
@@ -257,6 +271,13 @@ spec:
         - name: cron-jobs
           configMap:
             name: {{ .Values.cronJobs.configMapName }}
+        {{- end }}
+        {{- range $agent := .Values.agentWorkspaceFiles }}
+        {{- range $agent.files }}
+        - name: agent-workspace-{{ .name }}
+          configMap:
+            name: {{ .configMapName }}
+        {{- end }}
         {{- end }}
         {{- with .Values.additionalVolumes }}
         {{- toYaml . | nindent 8 }}
