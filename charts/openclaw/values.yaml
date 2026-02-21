@@ -70,6 +70,21 @@ workspaceFiles: []
 #       key: gog
 skillFiles: []
 
+# -- Per-agent workspace files to mount from ConfigMaps into ~/.openclaw/workspace-<agentKey>/
+# Each entry targets a specific agent's workspace directory with its own persona files.
+# Uses the same copy-to-PVC pattern as workspaceFiles for persistence across restarts.
+# Example:
+#   agentWorkspaceFiles:
+#     - agentKey: support
+#       files:
+#         - name: soul-support
+#           configMapName: openclaw-soul-support
+#           key: SOUL.md
+#         - name: identity-support
+#           configMapName: openclaw-identity-support
+#           key: IDENTITY.md
+agentWorkspaceFiles: []
+
 # Cron jobs configuration
 cronJobs:
   # -- ConfigMap name containing cron jobs definition (leave empty to disable)
