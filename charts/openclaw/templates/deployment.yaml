@@ -85,6 +85,14 @@ spec:
               [ -f /tmp/agent-workspace-files/{{ .name }}/{{ .key }} ] && cp /tmp/agent-workspace-files/{{ .name }}/{{ .key }} /home/openclaw/.openclaw/workspace-{{ $agent.agentKey }}/{{ .key }}
               {{- end }}
               {{- end }}
+              {{- range $agent := .Values.agentSkillFiles }}
+              {{- range $skill := $agent.skills }}
+              mkdir -p /home/openclaw/.openclaw/workspace-{{ $agent.agentKey }}/skills/{{ $skill.name }}
+              [ -f /tmp/agent-skill-files/{{ $agent.agentKey }}/{{ $skill.name }}/{{ $skill.key }} ] && \
+                cp /tmp/agent-skill-files/{{ $agent.agentKey }}/{{ $skill.name }}/{{ $skill.key }} \
+                /home/openclaw/.openclaw/workspace-{{ $agent.agentKey }}/skills/{{ $skill.name }}/SKILL.md
+              {{- end }}
+              {{- end }}
               chown -R 1000:1000 /home/openclaw/.openclaw
           securityContext:
             runAsUser: 0
@@ -118,6 +126,14 @@ spec:
             - name: agent-workspace-{{ .name }}
               mountPath: /tmp/agent-workspace-files/{{ .name }}/{{ .key }}
               subPath: {{ .key }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            {{- range $agent := .Values.agentSkillFiles }}
+            {{- range $skill := $agent.skills }}
+            - name: agent-skill-{{ $agent.agentKey }}-{{ $skill.name }}
+              mountPath: /tmp/agent-skill-files/{{ $agent.agentKey }}/{{ $skill.name }}/{{ $skill.key }}
+              subPath: {{ $skill.key }}
               readOnly: true
             {{- end }}
             {{- end }}
@@ -277,6 +293,13 @@ spec:
         - name: agent-workspace-{{ .name }}
           configMap:
             name: {{ .configMapName }}
+        {{- end }}
+        {{- end }}
+        {{- range $agent := .Values.agentSkillFiles }}
+        {{- range $skill := $agent.skills }}
+        - name: agent-skill-{{ $agent.agentKey }}-{{ $skill.name }}
+          configMap:
+            name: {{ $skill.configMapName }}
         {{- end }}
         {{- end }}
         {{- with .Values.additionalVolumes }}

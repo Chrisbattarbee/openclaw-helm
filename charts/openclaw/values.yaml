@@ -70,6 +70,18 @@ workspaceFiles: []
 #       key: gog
 skillFiles: []
 
+# -- Per-agent skill files to mount from ConfigMaps into ~/.openclaw/workspace-<agentKey>/skills/<name>/SKILL.md
+# Each entry targets a specific agent's workspace and lists skills to install for that agent.
+# The same ConfigMap can be referenced in both skillFiles (default agent) and agentSkillFiles (sub-agents).
+# Example:
+#   agentSkillFiles:
+#     - agentKey: support
+#       skills:
+#         - name: notion
+#           configMapName: openclaw-skill-notion
+#           key: SKILL.md
+agentSkillFiles: []
+
 # -- Per-agent workspace files to mount from ConfigMaps into ~/.openclaw/workspace-<agentKey>/
 # Each entry targets a specific agent's workspace directory with its own persona files.
 # Uses the same copy-to-PVC pattern as workspaceFiles for persistence across restarts.
