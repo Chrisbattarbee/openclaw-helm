@@ -2,8 +2,8 @@ apiVersion: v2
 name: openclaw
 description: A Helm chart for deploying OpenClaw - an open-source AI personal assistant
 type: application
-version: 0.1.13
-appVersion: "2026.3.2"
+version: 0.1.14
+appVersion: "2026.3.7"
 keywords:
   - openclaw
   - ai
